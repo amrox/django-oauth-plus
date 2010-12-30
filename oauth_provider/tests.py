@@ -254,6 +254,22 @@ If you try to put a wrong callback, it will return an error::
     >>> response.content
     'Invalid callback URL.'
 
+If you do not provide any callback (i.e. oob), the Service Provider SHOULD 
+display the value of the verification code::
+
+    >>> parameters['oauth_callback'] = 'oob'
+    >>> parameters['oauth_nonce'] = 'requestnonceoob'
+    >>> response = c.get("/oauth/request_token/", parameters)
+    >>> response.status_code
+    200
+    >>> response.content
+    'oauth_token_secret=...&oauth_token=...&oauth_callback_confirmed=true'
+    >>> oobtoken = list(Token.objects.all())[-1]
+    >>> oobtoken.key in response.content, oobtoken.secret in response.content
+    (True, True)
+    >>> oobtoken.callback, oobtoken.callback_confirmed
+    (None, False)
+
 
 Requesting User Authorization
 -----------------------------
