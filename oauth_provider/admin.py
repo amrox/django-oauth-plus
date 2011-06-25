@@ -6,10 +6,10 @@ class ResourceAdmin(admin.ModelAdmin):
 	pass
 	
 class ConsumerAdmin(admin.ModelAdmin):
-	pass
+	raw_id_fields = ['user',]
 
 class TokenAdmin(admin.ModelAdmin):
-	pass
+	raw_id_fields = ['user', 'consumer', 'resource']
 	
 
 admin.site.register(Resource, ResourceAdmin)
