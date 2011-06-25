@@ -4,8 +4,6 @@ import oauth2 as oauth
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseRedirect
-from django.shortcuts import render_to_response
-from django.template import RequestContext
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.translation import ugettext as _
 from django.core.urlresolvers import get_callable
@@ -107,6 +105,8 @@ def user_authorization(request, form_class=AuthorizeRequestTokenForm):
 @csrf_exempt
 def access_token(request):
     oauth_request = get_oauth_request(request)
+    if oauth_request is None:
+        return INVALID_PARAMS_RESPONSE
 
     missing_params = require_params(oauth_request, ('oauth_token', 'oauth_verifier'))
     if missing_params is not None:

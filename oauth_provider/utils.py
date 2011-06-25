@@ -29,7 +29,7 @@ def initialize_server_request(request):
     if request.method == "POST" and \
         (request.META.get('CONTENT_TYPE') == "application/x-www-form-urlencoded" \
             or request.META.get('SERVER_NAME') == 'testserver'):
-        parameters = dict(request.REQUEST.items())
+        parameters = dict((k, v.encode('utf-8')) for (k, v) in request.REQUEST.iteritems())
 
     oauth_request = oauth.Request.from_request(request.method, 
                                               request.build_absolute_uri(request.path), 
@@ -65,7 +65,7 @@ def get_oauth_request(request):
     return oauth.Request.from_request(request.method, 
                                       request.build_absolute_uri(request.path), 
                                       headers, 
-                                      dict(request.REQUEST))
+                                      dict((k, v.encode('utf-8')) for (k, v) in request.REQUEST.iteritems()))
 
 def verify_oauth_request(request, oauth_request, consumer, token=None):
     """ Helper function to verify requests. """
