@@ -1,15 +1,15 @@
 from setuptools import setup, find_packages
  
 setup(
-    name='django-oauth',
-    version='1.1',
-    description='Support of OAuth in Django.',
+    name='django-oauth-plus',
+    version='2.0',
+    description='Support of OAuth 1.0a in Django using python-oauth2.',
     author='David Larlet',
     author_email='david@larlet.fr',
-    url='http://code.welldev.org/django-oauth/',
+    url='http://code.welldev.org/django-oauth-plus/',
     packages=find_packages(),
     classifiers=[
-        'Development Status :: 5 - Production/Stable',
+        'Development Status :: 4 - Beta',
         'Environment :: Web Environment',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: BSD License',

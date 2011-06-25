@@ -4,7 +4,7 @@ from urlparse import urlparse
 from django.conf import settings
 from django.http import HttpResponse, HttpResponseBadRequest
 
-from consts import MAX_URL_LENGTH, OUT_OF_BAND
+from consts import MAX_URL_LENGTH
 
 OAUTH_REALM_KEY_NAME = getattr(settings, 'OAUTH_REALM_KEY_NAME', '')
 OAUTH_SIGNATURE_METHODS = getattr(settings, 'OAUTH_SIGNATURE_METHODS', ['plaintext', 'hmac-sha1'])
@@ -32,7 +32,7 @@ def initialize_server_request(request):
         parameters = dict(request.REQUEST.items())
 
     oauth_request = oauth.Request.from_request(request.method, 
-                                              request.build_absolute_uri(), 
+                                              request.build_absolute_uri(request.path), 
                                               headers=auth_header,
                                               parameters=parameters,
                                               query_string=request.META.get('QUERY_STRING', ''))

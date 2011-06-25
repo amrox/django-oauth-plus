@@ -47,12 +47,9 @@ See the `OAuth Authentication Flow`_ if you need visual details.
 Django installation
 ===================
 
-There are a few steps for setting up a proper installation. The `OAuth Python
-library`_ is required and must be patched (at least for the moment).
+First, install dependencies through pip::
 
-.. _`OAuth Python library`: http://oauth.googlecode.com/svn/code/python/oauth/
-
-You can find a custom version of the module at the root level of django-oauth.
+    pip install -r requirements.txt
 
 You need to specify the OAuth provider application in your settings and to 
 sync your database thanks to the ``syncdb`` command. Then add it to your 

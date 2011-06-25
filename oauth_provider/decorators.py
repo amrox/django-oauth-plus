@@ -1,11 +1,10 @@
 from oauth2 import Error
 
 try:
-    from functools import wraps, update_wrapper
+    from functools import update_wrapper
 except ImportError:
-    from django.utils.functional import wraps, update_wrapper  # Python 2.3, 2.4 fallback.
+    from django.utils.functional import update_wrapper  # Python 2.3, 2.4 fallback.
 
-from django.contrib.auth import REDIRECT_FIELD_NAME
 from django.utils.translation import ugettext as _
 
 from utils import initialize_server_request, send_oauth_error, get_oauth_request
