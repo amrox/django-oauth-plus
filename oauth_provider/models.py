@@ -7,7 +7,7 @@ import oauth2 as oauth
 from django.db import models
 from django.contrib.auth.models import User
 
-from managers import TokenManager, ConsumerManager, ResourceManager
+from managers import TokenManager
 from consts import KEY_SIZE, SECRET_SIZE, CONSUMER_KEY_SIZE, CONSUMER_STATES,\
                    PENDING, VERIFIER_SIZE, MAX_URL_LENGTH, OUT_OF_BAND
 from utils import check_valid_callback
@@ -27,8 +27,6 @@ class Resource(models.Model):
     name = models.CharField(max_length=255)
     url = models.TextField(max_length=MAX_URL_LENGTH)
     is_readonly = models.BooleanField(default=True)
-    
-    objects = ResourceManager()
 
     def __unicode__(self):
         return u"Resource %s with url %s" % (self.name, self.url)
@@ -43,8 +41,6 @@ class Consumer(models.Model):
 
     status = models.SmallIntegerField(choices=CONSUMER_STATES, default=PENDING)
     user = models.ForeignKey(User, null=True, blank=True)
-
-    objects = ConsumerManager()
         
     def __unicode__(self):
         return u"Consumer %s with key %s" % (self.name, self.key)
