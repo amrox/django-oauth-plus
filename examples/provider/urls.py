@@ -8,5 +8,5 @@ admin.autodiscover()
 urlpatterns = patterns('',
     url(r'^oauth/', include('oauth_provider.urls')),
     url(r'^oauth/photo/$', protected_resource_example, name='oauth_example'),
-    (r'^admin/(.*)', admin.site.root),
+    url(r'^admin/', include(admin.site.urls)),
 )
