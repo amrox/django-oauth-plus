@@ -74,7 +74,7 @@ def user_authorization(request, form_class=AuthorizeRequestTokenForm):
             else:
                 args = { 'error': _('Access not granted by user.') }
             if request_token.callback is not None and request_token.callback != OUT_OF_BAND:
-                response = HttpResponseRedirect('%s&%s' % (request_token.get_callback_url(), urlencode(args)))
+                response = HttpResponseRedirect(request_token.get_callback_url(args))
             else:
                 # try to get custom callback view
                 callback_view_str = getattr(settings, OAUTH_CALLBACK_VIEW, 

@@ -104,7 +104,7 @@ class Token(models.Model):
         self.secret = generate_random(length=SECRET_SIZE)
         self.save()
 
-    def get_callback_url(self):
+    def get_callback_url(self, args=None):
         """
         OAuth 1.0a, append the oauth_verifier.
         """
@@ -115,9 +115,12 @@ class Token(models.Model):
                 query = '%s&oauth_verifier=%s' % (query, self.verifier)
             else:
                 query = 'oauth_verifier=%s' % self.verifier
+            if args is not None:
+                query += "&%s" % urllib.urlencode(args)
             return urlparse.urlunparse((scheme, netloc, path, params,
                 query, fragment))
-        return self.callback
+        args = args is not None and "?%s" % urllib.urlencode(args) or ""
+        return self.callback + args
 
     def set_callback(self, callback):
         if callback != OUT_OF_BAND: # out of band, says "we can't do this!"
