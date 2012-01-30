@@ -12,6 +12,7 @@ from decorators import oauth_required
 from forms import AuthorizeRequestTokenForm
 from store import store, InvalidConsumerError, InvalidTokenError
 from utils import verify_oauth_request, get_oauth_request, require_params, send_oauth_error
+from utils import is_xauth_request, verify_xauth_request
 from consts import OUT_OF_BAND
 
 OAUTH_AUTHORIZE_VIEW = 'OAUTH_AUTHORIZE_VIEW'
@@ -28,6 +29,9 @@ def request_token(request):
     missing_params = require_params(oauth_request, ('oauth_callback',))
     if missing_params is not None:
         return missing_params
+
+    if is_xauth_request(oauth_request):
+        return HttpResponseBadRequest('xAuth not allowed for this method.')
 
     try:
         consumer = store.get_consumer(request, oauth_request, oauth_request['oauth_consumer_key'])
@@ -101,34 +105,64 @@ def user_authorization(request, form_class=AuthorizeRequestTokenForm):
         
     return response
 
-
 @csrf_exempt
 def access_token(request):
     oauth_request = get_oauth_request(request)
     if oauth_request is None:
         return INVALID_PARAMS_RESPONSE
 
-    missing_params = require_params(oauth_request, ('oauth_token', 'oauth_verifier'))
-    if missing_params is not None:
-        return missing_params
-
-    try:
-        request_token = store.get_request_token(request, oauth_request, oauth_request['oauth_token'])
-    except InvalidTokenError:
-        return HttpResponseBadRequest('Invalid request token.')
+    # Consumer
     try:
         consumer = store.get_consumer(request, oauth_request, oauth_request['oauth_consumer_key'])
     except InvalidConsumerError:
         return HttpResponseBadRequest('Invalid consumer.')
 
-    if not verify_oauth_request(request, oauth_request, consumer, request_token):
-        return HttpResponseBadRequest('Could not verify OAuth request.')
+    is_xauth = is_xauth_request(oauth_request)
 
-    if oauth_request.get('oauth_verifier', None) != request_token.verifier:
-        return HttpResponseBadRequest('Invalid OAuth verifier.')
+    if not is_xauth:
 
-    if not request_token.is_approved:
-        return HttpResponseBadRequest('Request Token not approved by the user.')
+        # Check Parameters
+        missing_params = require_params(oauth_request, ('oauth_token', 'oauth_verifier'))
+        if missing_params is not None:
+            return missing_params
+
+        # Check Request Token
+        try:
+            request_token = store.get_request_token(request, oauth_request, oauth_request['oauth_token'])
+        except InvalidTokenError:
+            return HttpResponseBadRequest('Invalid request token.')
+        if not request_token.is_approved:
+            return HttpResponseBadRequest('Request Token not approved by the user.')
+
+        # Verify Signature
+        if not verify_oauth_request(request, oauth_request, consumer, request_token):
+            return HttpResponseBadRequest('Could not verify OAuth request.')
+       
+        # Check Verifier
+        if oauth_request.get('oauth_verifier', None) != request_token.verifier:
+            return HttpResponseBadRequest('Invalid OAuth verifier.')
+
+    else: # xAuth
+
+        # Check Parameters
+        missing_params = require_params(oauth_request, ('x_auth_username', 'x_auth_password', 'x_auth_mode'))
+        if missing_params is not None:
+            return missing_params
+
+        # Check Signature
+        if not verify_oauth_request(request, oauth_request, consumer):
+            return HttpResponseBadRequest('Could not verify OAuth request.')
+        
+        # Check Username/Password 
+        if is_xauth and not verify_xauth_request(request, oauth_request):
+            return HttpResponseBadRequest('xAuth username or password is not valid')
+        
+        # Handle Request Token
+        try:
+            request_token = store.create_request_token(request, oauth_request, consumer, oauth_request['oauth_callback'])
+            request_token = store.authorize_request_token(request, oauth_request, request_token)
+        except oauth.Error, err:
+            return send_oauth_error(err)
 
     access_token = store.create_access_token(request, oauth_request, consumer, request_token)
 

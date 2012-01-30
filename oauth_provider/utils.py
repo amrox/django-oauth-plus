@@ -3,6 +3,7 @@ from urlparse import urlparse
 
 from django.conf import settings
 from django.http import HttpResponse, HttpResponseBadRequest
+from django.contrib.auth import authenticate
 
 from consts import MAX_URL_LENGTH
 
@@ -92,6 +93,25 @@ def verify_oauth_request(request, oauth_request, consumer, token=None):
 
     return True
 
+def is_xauth_request(request):
+    return request.get('x_auth_password') and request.get('x_auth_username') 
+
+def verify_xauth_request(request, oauth_request):
+    """
+    Helper function to verify xAuth requests.
+
+    Returns a user if valid or None otherwise
+    """
+    if not oauth_request.get_parameter('x_auth_mode') == 'client_auth':
+        return None
+
+    x_auth_username = oauth_request.get_parameter('x_auth_username')
+    x_auth_password = oauth_request.get_parameter('x_auth_password')
+    user = authenticate(username=x_auth_username, password=x_auth_password)
+
+    if user is not None:
+        request.user = user
+    return user
 
 def require_params(oauth_request, parameters=[]):
     """ Ensures that the request contains all required parameters. """
