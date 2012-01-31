@@ -149,6 +149,10 @@ def access_token(request):
         if missing_params is not None:
             return missing_params
 
+        # Check if Consumer allows xAuth
+        if not consumer.xauth_allowed:
+            return HttpResponseBadRequest('xAuth not allowed for this method')
+
         # Check Signature
         if not verify_oauth_request(request, oauth_request, consumer):
             return HttpResponseBadRequest('Could not verify OAuth request.')
