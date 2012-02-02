@@ -155,7 +155,7 @@ def access_token(request):
 
         # Check Signature
         if not verify_oauth_request(request, oauth_request, consumer):
-            return HttpResponseBadRequest('Could not verify OAuth request.')
+            return HttpResponseBadRequest('Could not verify xAuth request.')
         
         # Check Username/Password 
         if is_xauth and not verify_xauth_request(request, oauth_request):
