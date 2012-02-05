@@ -61,25 +61,10 @@ def send_oauth_error(err=None):
 def get_oauth_request(request):
     """ Converts a Django request object into an `oauth2.Request` object. """
     headers = {}
-    uri = request.build_absolute_uri(request.path)
-
     if 'HTTP_AUTHORIZATION' in request.META:
         headers['Authorization'] = request.META['HTTP_AUTHORIZATION']
-
-    # Some hosts will terminate SSL in front end web server or load balancer,
-    # and pass plain HTTP to the app. In this case, the app will receive a
-    # http:// URL, but the request was signed with an https:// URL and the
-    # signature verification will fail. Solution is to check for the
-    # HTTP_X_FORWARDED_PROTO header, and use it's value in the uri for OAuth
-    # purposes.
-
-    if 'HTTP_X_FORWARDED_PROTO' in request.META:
-        parts = uri.split(':')
-        parts[0] = request.META['HTTP_X_FORWARDED_PROTO'] 
-        uri = ':'.join(parts)
-
     return oauth.Request.from_request(request.method, 
-                                      uri,
+                                      request.build_absolute_uri(request.path), 
                                       headers, 
                                       dict((k, v.encode('utf-8')) for (k, v) in request.REQUEST.iteritems()))
 
